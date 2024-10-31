@@ -1,6 +1,8 @@
 package service
 
 import (
+	"context"
+	"github.com/AkbarFikri/FoodGuard-Backend/internal/entity"
 	"github.com/AkbarFikri/FoodGuard-Backend/internal/repository"
 )
 
@@ -15,6 +17,8 @@ func New(repo repository.Repository) Client {
 }
 
 type AuthService interface {
+	Register(ctx context.Context, user entity.User) (string, error)
+	Login(ctx context.Context, user entity.User) (string, error)
 }
 
 type authService struct {

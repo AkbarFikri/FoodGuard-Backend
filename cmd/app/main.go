@@ -11,6 +11,7 @@ import (
 
 func main() {
 	logger := config.NewLogger()
+	validator := config.NewValidator()
 
 	if err := godotenv.Load(); err != nil {
 		logger.Fatalf("Error loading .env file")
@@ -26,11 +27,11 @@ func main() {
 
 	repo := repository.New(db)
 	srv := service.New(repo)
-	handl := handler.New(srv, router)
+	handl := handler.New(srv, router, validator)
 
 	if err := handl.RegisterHandler(); err != nil {
 		logger.Fatal(err)
 	}
 
-	logger.Fatal(app.Listen(":8080"))
+	logger.Fatal(app.Listen(":9090"))
 }

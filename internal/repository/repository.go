@@ -1,6 +1,10 @@
 package repository
 
-import "gorm.io/gorm"
+import (
+	"context"
+	"github.com/AkbarFikri/FoodGuard-Backend/internal/entity"
+	"gorm.io/gorm"
+)
 
 func New(db *gorm.DB) Repository {
 	return &repository{
@@ -37,7 +41,7 @@ func (r *repository) NewClient(tx bool) (Client, error) {
 	}
 
 	return Client{
-		User:     userRepository{q: db},
+		User:     &userRepository{q: db},
 		Commit:   commitFunc,
 		Rollback: rollbackFunc,
 	}, nil
@@ -45,6 +49,8 @@ func (r *repository) NewClient(tx bool) (Client, error) {
 
 type Client struct {
 	User interface {
+		GetByEmail(ctx context.Context, email string) (entity.User, error)
+		Insert(ctx context.Context, user entity.User) error
 	}
 	Commit   func() error
 	Rollback func() error

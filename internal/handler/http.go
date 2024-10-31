@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/AkbarFikri/FoodGuard-Backend/internal/service"
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -16,14 +17,15 @@ type Handlers interface {
 	Start(srv fiber.Router)
 }
 
-func New(client service.Client, router fiber.Router) *Handler {
+func New(client service.Client, router fiber.Router, validate *validator.Validate) *Handler {
 	var handlers []Handlers
 
-	authHandler := newAuthHandler(client.Auth)
+	authHandler := newAuthHandler(client.Auth, validate)
 
 	handlers = append(handlers, authHandler)
 	return &Handler{
-		router: router,
+		router:   router,
+		handlers: handlers,
 	}
 }
 
@@ -39,5 +41,6 @@ func (h *Handler) RegisterHandler() error {
 }
 
 type authHandler struct {
-	service service.AuthService
+	service  service.AuthService
+	validate *validator.Validate
 }
