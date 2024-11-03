@@ -26,7 +26,7 @@ func (h *authHandler) Start(srv fiber.Router) {
 
 	user := srv.Group("/user")
 
-	user.Get("/current", h.middleware.NewtokenMiddleware)
+	user.Get("/current", h.middleware.NewtokenMiddleware, h.HandleCurrentUser)
 }
 
 func (h *authHandler) HandleRegister(c *fiber.Ctx) error {
