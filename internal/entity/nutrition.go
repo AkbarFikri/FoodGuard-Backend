@@ -5,7 +5,9 @@ import "time"
 type Nutrition struct {
 	ID             string
 	Name           string
+	UserID         string
 	Type           string
+	Score          float32
 	Carbohydrate   float64
 	Sugar          float64
 	Calorie        float64

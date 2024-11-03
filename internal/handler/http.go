@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/AkbarFikri/FoodGuard-Backend/internal/middleware"
 	"github.com/AkbarFikri/FoodGuard-Backend/internal/service"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -9,27 +10,34 @@ import (
 )
 
 type Handler struct {
-	router   fiber.Router
-	handlers []Handlers
+	router     fiber.Router
+	handlers   []Handlers
+	middleware middleware.Middleware
 }
 
 type Handlers interface {
 	Start(srv fiber.Router)
 }
 
-func New(client service.Client, router fiber.Router, validate *validator.Validate) *Handler {
+func New(client service.Client,
+	router fiber.Router,
+	validate *validator.Validate, middleware middleware.Middleware) *Handler {
 	var handlers []Handlers
 
 	authHandler := newAuthHandler(client.Auth, validate)
+	nutritionHandler := newNutritionHandler(client.Nutrition, validate, middleware)
 
-	handlers = append(handlers, authHandler)
+	handlers = append(handlers, authHandler, nutritionHandler)
 	return &Handler{
-		router:   router,
-		handlers: handlers,
+		router:     router,
+		handlers:   handlers,
+		middleware: middleware,
 	}
 }
 
 func (h *Handler) RegisterHandler() error {
+
+	h.router.Use(h.middleware.NewRateLimitter)
 	h.router.Use(cors.New())
 	h.router.Use(logger.New())
 
@@ -43,4 +51,10 @@ func (h *Handler) RegisterHandler() error {
 type authHandler struct {
 	service  service.AuthService
 	validate *validator.Validate
+}
+
+type nutritionHandler struct {
+	service    service.NutritionService
+	validate   *validator.Validate
+	middleware middleware.Middleware
 }

@@ -41,9 +41,10 @@ func (r *repository) NewClient(tx bool) (Client, error) {
 	}
 
 	return Client{
-		User:     &userRepository{q: db},
-		Commit:   commitFunc,
-		Rollback: rollbackFunc,
+		User:      &userRepository{q: db},
+		Nutrition: &nutritionRepository{q: db},
+		Commit:    commitFunc,
+		Rollback:  rollbackFunc,
 	}, nil
 }
 
@@ -52,10 +53,18 @@ type Client struct {
 		GetByEmail(ctx context.Context, email string) (entity.User, error)
 		Insert(ctx context.Context, user entity.User) error
 	}
+	Nutrition interface {
+		Insert(ctx context.Context, nutrition entity.Nutrition) error
+		GetAllByUserID(ctx context.Context, userID string) ([]entity.Nutrition, error)
+	}
 	Commit   func() error
 	Rollback func() error
 }
 
 type userRepository struct {
+	q *gorm.DB
+}
+
+type nutritionRepository struct {
 	q *gorm.DB
 }
