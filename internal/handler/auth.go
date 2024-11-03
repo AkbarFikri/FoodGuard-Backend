@@ -3,15 +3,18 @@ package handler
 import (
 	"github.com/AkbarFikri/FoodGuard-Backend/internal/dto"
 	"github.com/AkbarFikri/FoodGuard-Backend/internal/entity"
+	"github.com/AkbarFikri/FoodGuard-Backend/internal/middleware"
+	"github.com/AkbarFikri/FoodGuard-Backend/internal/pkg/helper"
 	"github.com/AkbarFikri/FoodGuard-Backend/internal/service"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
 
-func newAuthHandler(service service.AuthService, validate *validator.Validate) *authHandler {
+func newAuthHandler(service service.AuthService, validate *validator.Validate, middleware middleware.Middleware) *authHandler {
 	return &authHandler{
-		service:  service,
-		validate: validate,
+		service:    service,
+		validate:   validate,
+		middleware: middleware,
 	}
 }
 
@@ -20,6 +23,10 @@ func (h *authHandler) Start(srv fiber.Router) {
 
 	auth.Post("/register", h.HandleRegister)
 	auth.Post("/login", h.HandleLogin)
+
+	user := srv.Group("/user")
+
+	user.Get("/current", h.middleware.NewtokenMiddleware)
 }
 
 func (h *authHandler) HandleRegister(c *fiber.Ctx) error {
@@ -71,5 +78,18 @@ func (h *authHandler) HandleLogin(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"accessToken": res,
+	})
+}
+
+func (h *authHandler) HandleCurrentUser(c *fiber.Ctx) error {
+	user, err := helper.GetUserFromContext(c)
+	if err != nil {
+		return fiber.ErrUnauthorized
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"username": user.Username,
+		"email":    user.Email,
+		"id":       user.ID,
 	})
 }

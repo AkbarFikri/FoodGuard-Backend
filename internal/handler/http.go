@@ -24,7 +24,7 @@ func New(client service.Client,
 	validate *validator.Validate, middleware middleware.Middleware) *Handler {
 	var handlers []Handlers
 
-	authHandler := newAuthHandler(client.Auth, validate)
+	authHandler := newAuthHandler(client.Auth, validate, middleware)
 	nutritionHandler := newNutritionHandler(client.Nutrition, validate, middleware)
 
 	handlers = append(handlers, authHandler, nutritionHandler)
@@ -49,8 +49,9 @@ func (h *Handler) RegisterHandler() error {
 }
 
 type authHandler struct {
-	service  service.AuthService
-	validate *validator.Validate
+	service    service.AuthService
+	validate   *validator.Validate
+	middleware middleware.Middleware
 }
 
 type nutritionHandler struct {
